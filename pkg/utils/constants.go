@@ -3,6 +3,7 @@ package utils
 const (
 	DefaultNamespace       = "kosmos-system"
 	DefaultImageRepository = "ghcr.io/kosmos-io"
+	DefaultKubeConfigPath  = "~/.kube/config"
 )
 
 type Protocol string

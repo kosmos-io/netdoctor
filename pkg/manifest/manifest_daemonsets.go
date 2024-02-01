@@ -13,11 +13,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: clusterlink-floater
+      app: {{ .Name }}
   template:
     metadata:
       labels:
-        app: clusterlink-floater
+        app: {{ .Name }}
     spec:
       hostNetwork: {{ .EnableHostNetwork }}
       serviceAccountName: clusterlink-floater
@@ -30,8 +30,8 @@ spec:
                 operator: DoesNotExist
       containers:
       - name: floater
-        image: {{ .ImageRepository }}/clusterlink-floater:v{{ .Version }}
-        imagePullPolicy: IfNotPresent
+        image: {{ .ImageRepository }}/clusterlink-floater:{{ .Version }}
+        imagePullPolicy: Always
         command:
           - clusterlink-floater
         securityContext:

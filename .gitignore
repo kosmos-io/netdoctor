@@ -31,3 +31,5 @@ kube-config
 __debug_bin*
 
 ignore_dir
+
+cmd/netdr/*.json

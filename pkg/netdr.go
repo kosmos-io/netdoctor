@@ -11,7 +11,7 @@ import (
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
 
-	"github.com/kosmos.io/netdoctor/pkg/check"
+	cmd "github.com/kosmos.io/netdoctor/pkg/command"
 )
 
 // DefaultConfigFlags It composes the set of values necessary for obtaining a REST client config with default values set.
@@ -40,8 +40,25 @@ func NewNetDoctorCtlCommand() *cobra.Command {
 		{
 			Message: "Troubleshooting and Debugging Commands:",
 			Commands: []*cobra.Command{
-				check.NewCmdSingleCheck(),
-				check.NewCmdMultiCheck(),
+				cmd.NewCheckCmd(),
+			},
+		},
+		{
+			Message: "Troubleshooting and Debugging Commands:",
+			Commands: []*cobra.Command{
+				cmd.NewInitCmd(),
+			},
+		},
+		{
+			Message: "Troubleshooting and Debugging Commands:",
+			Commands: []*cobra.Command{
+				cmd.NewResumeCmd(),
+			},
+		},
+		{
+			Message: "Troubleshooting and Debugging Commands:",
+			Commands: []*cobra.Command{
+				cmd.NewCleanCmd(),
 			},
 		},
 	}
