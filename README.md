@@ -23,6 +23,12 @@ For the above two aspects, we designed the `NetDoctor` tool to solve network pro
 
 ### Netctl
 NetDoctor provides a supporting tool `netctl`, which allows you to easily check the network connectivity of the Kubernetes cluster through the command line.
+#### From artifact
+````bash
+wget https://github.com/kosmos-io/netdoctor/releases/download/v0.0.1/netctl-linux-amd64 
+mv netctl-linux-amd64 netctl
+````
+#### From source code
 ````bash
 # Download project source code
 $ git clone https://github.com/kosmos-io/netdoctor.git
