@@ -32,7 +32,7 @@ jobs:
 
       # step3: make binaries
       - name: Make binaries
-        run: make netctl
+        run: make release
 
       # step4: create release
       - name: release
