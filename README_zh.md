@@ -23,6 +23,12 @@
 
 ### netctl工具
 * NetDoctor提供配套工具`netctl`，您可以方便的通过命令行去进行Kubernetes集群的网络连通性检查。
+#### 从制品库获取
+````bash
+wget https://github.com/kosmos-io/netdoctor/releases/download/v0.0.1/netctl-linux-amd64 
+mv netctl-linux-amd64 netctl
+````
+#### 从源码编译
 ````bash
 # 下载项目源码
 $ git clone https://github.com/kosmos-io/netdoctor.git
