@@ -4,6 +4,6 @@ ARG BINARY
 
 RUN apk add --no-cache ca-certificates
 RUN apk update && apk upgrade
-RUN apk add ip6tables iptables curl
+RUN apk add --no-cache ip6tables iptables curl netcat-openbsd
 
 COPY ${BINARY} /bin/${BINARY}

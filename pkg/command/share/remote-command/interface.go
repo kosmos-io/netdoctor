@@ -42,15 +42,29 @@ func PrintStatus(status int) string {
 	return "UNEXCEPTIONED"
 }
 
-func NewCmd(protocol string, args ...string) Command {
-	if protocol == string(utils.TCP) {
-		return &Curl{
-			TargetIP: args[0],
-			Port:     args[1],
+func NewCmd(protocol string, args ...any) Command {
+	switch args[1].(type) {
+	case []string:
+		return &Ncat{
+			Protocol: protocol,
+			TargetIP: args[0].([]string),
+			Port:     args[1].([]string),
 		}
-	} else {
-		return &Ping{
-			TargetIP: args[0],
+	default:
+		if protocol == string(utils.TCP) {
+			return &Curl{
+				TargetIP: args[0].(string),
+				Port:     args[1].(string),
+			}
+		} else if protocol == string(utils.DNS) {
+			return &Nslookup{
+				TargetHost: args[0].(string),
+				DNSServer:  args[1].(string),
+			}
+		} else {
+			return &Ping{
+				TargetIP: args[0].(string),
+			}
 		}
 	}
 }

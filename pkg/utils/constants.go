@@ -12,4 +12,5 @@ const (
 	TCP  Protocol = "tcp"
 	UDP  Protocol = "udp"
 	IPv4 Protocol = "ipv4"
+	DNS  Protocol = "dns"
 )

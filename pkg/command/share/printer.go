@@ -19,13 +19,13 @@ type PrintCheckData struct {
 
 func PrintResult(resultData []*PrintCheckData) {
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET_IP", "RESULT"})
+	table.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGETP", "RESULT"})
 
 	tableException := tablewriter.NewWriter(os.Stdout)
-	tableException.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET_IP", "RESULT", "LOG"})
+	tableException.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET", "RESULT", "LOG"})
 
 	tableFailed := tablewriter.NewWriter(os.Stdout)
-	tableFailed.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET_IP", "RESULT", "LOG"})
+	tableFailed.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET", "RESULT", "LOG"})
 
 	resumeData := []*PrintCheckData{}
 
@@ -61,10 +61,17 @@ func PrintResult(resultData []*PrintCheckData) {
 			})
 		}
 	}
-	fmt.Println("")
-	table.Render()
-	fmt.Println("")
-	tableException.Render()
-
+	if table.NumLines() > 0 {
+		fmt.Println("")
+		table.Render()
+	}
+	if tableFailed.NumLines() > 0 {
+		fmt.Println("")
+		tableFailed.Render()
+	}
+	if tableException.NumLines() > 0 {
+		fmt.Println("")
+		tableException.Render()
+	}
 	utils.WriteResume(resumeData)
 }

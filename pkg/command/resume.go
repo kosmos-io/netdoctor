@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/kosmos.io/netdoctor/pkg/command/share"
 	"github.com/kosmos.io/netdoctor/pkg/utils"
@@ -60,6 +61,9 @@ func (o *ResumeOptions) LoadConfig() {
 
 func (o *ResumeOptions) Complete() error {
 	o.LoadConfig()
+	if o.DoOption == nil {
+		return fmt.Errorf("config.json load error")
+	}
 
 	srcfloater := &share.Floater{
 		Namespace:         o.DoOption.Namespace,
@@ -107,6 +111,17 @@ func (o *ResumeOptions) Complete() error {
 func (o *ResumeOptions) Validate() error {
 	if len(o.DoOption.Namespace) == 0 {
 		return fmt.Errorf("namespace must be specified")
+	}
+
+	if len(o.DoOption.CustomizedTargetPortList) != 0 {
+		for _, port := range o.DoOption.CustomizedTargetPortList {
+			portInt, err := strconv.Atoi(port)
+			if err != nil {
+				return fmt.Errorf("invalid port: %s", port)
+			} else if portInt <= 0 || portInt > 65535 {
+				return fmt.Errorf("invalid port: %d", portInt)
+			}
+		}
 	}
 
 	return nil
