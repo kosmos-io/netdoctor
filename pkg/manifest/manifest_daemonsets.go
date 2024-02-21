@@ -41,6 +41,7 @@ spec:
             value: "{{ .Port }}"
           - name: "ENABLE_ANALYSIS"
             value: "{{ .EnableAnalysis }}"
+      hostPID: true
       tolerations:
       - effect: NoSchedule
         operator: Exists
