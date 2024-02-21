@@ -47,10 +47,10 @@ func NewInitCmd() *cobra.Command {
 
 func (o *InitOptions) Run() error {
 	doOptions := share.DoOptions{
-		Namespace:   utils.DefaultNamespace,
-		Port:        "8889",
+		Namespace: utils.DefaultNamespace,
+		// Port:        "8889",
 		PodWaitTime: 30,
-		Protocol:    string(utils.TCP),
+		Protocol:    string(utils.ICMP),
 		MaxNum:      3,
 		AutoClean:   false,
 		CmdTimeout:  10,
@@ -61,6 +61,7 @@ func (o *InitOptions) Run() error {
 		// dst
 		DstImageRepository: "",
 		DstKubeConfig:      "",
+		// Mode:               "pod",
 	}
 
 	if err := utils.WriteOpt(doOptions); err != nil {
