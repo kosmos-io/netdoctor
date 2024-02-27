@@ -13,6 +13,12 @@ type Ncat struct {
 	Port     []string
 }
 
+func (c *Ncat) GetTargetStr() string {
+	targetip := strings.Join(c.TargetIP, ",")
+	targetport := strings.Join(c.Port, ",")
+	return fmt.Sprintf("IPs: %s; Ports: %s", targetip, targetport)
+}
+
 func (c *Ncat) GetCommandStr() string {
 	// execute once
 	cmdStrList := []string{}

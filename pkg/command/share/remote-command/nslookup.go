@@ -10,6 +10,22 @@ type Nslookup struct {
 	DNSServer  string
 }
 
+func (c *Nslookup) GetTargetStr() string {
+	var targethost string
+	var targetdns string
+	if len(c.TargetHost) == 0 {
+		targethost = fmt.Sprintf("dns:%s", "kubernetes.default.svc.cluster.local")
+	} else {
+		targethost = c.TargetHost
+	}
+	if len(c.DNSServer) == 0 {
+		targetdns = "coredns"
+	} else {
+		targetdns = c.DNSServer
+	}
+	return fmt.Sprintf("host: %s; dns: %s", targethost, targetdns)
+}
+
 func (c *Nslookup) GetCommandStr() string {
 	// execute once
 	if c.TargetHost == "" {

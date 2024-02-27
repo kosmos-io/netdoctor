@@ -101,7 +101,10 @@ func (o *ResumeOptions) Complete() error {
 
 	var resumeData []*share.PrintCheckData
 
-	utils.ReadResume(&resumeData)
+	err := utils.ReadResume(&resumeData)
+	if err != nil {
+		klog.Error("read resumeData error")
+	}
 
 	o.DoOption.ResumeRecord = resumeData
 

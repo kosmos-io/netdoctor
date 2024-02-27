@@ -8,6 +8,7 @@ import (
 	command "github.com/kosmos.io/netdoctor/pkg/command/share/remote-command"
 	"github.com/kosmos.io/netdoctor/pkg/utils"
 	"github.com/olekukonko/tablewriter"
+	"k8s.io/klog/v2"
 )
 
 type PrintCheckData struct {
@@ -73,5 +74,8 @@ func PrintResult(resultData []*PrintCheckData) {
 		fmt.Println("")
 		tableException.Render()
 	}
-	utils.WriteResume(resumeData)
+	err := utils.WriteResume(resumeData)
+	if err != nil {
+		klog.Error("write resumeData error")
+	}
 }

@@ -2,7 +2,6 @@ package share
 
 import (
 	"fmt"
-	"strings"
 	"sync"
 
 	command "github.com/kosmos.io/netdoctor/pkg/command/share/remote-command"
@@ -144,29 +143,10 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 
 	worker := func(iPodInfo *FloatInfo) {
 		var cmdObj command.Command
-		var target string
 		if len(o.CustomizedTargetIPList) != 0 && len(o.CustomizedTargetPortList) != 0 {
 			cmdObj = command.NewCmd(o.Protocol, o.CustomizedTargetIPList, o.CustomizedTargetPortList)
-			targetip := strings.Join(o.CustomizedTargetIPList, ",")
-			targetport := strings.Join(o.CustomizedTargetPortList, ",")
-			target = fmt.Sprintf("IPs: %s; Ports: %s", targetip, targetport)
-
 		} else if o.Protocol == string(utils.DNS) {
 			cmdObj = command.NewCmd(o.Protocol, o.TargetHostToLookup, o.TargetDNSServer)
-			var targethost string
-			var targetdns string
-			if len(o.TargetHostToLookup) == 0 {
-				targethost = fmt.Sprintf("dns:%s", "kubernetes.default.svc.cluster.local")
-			} else {
-				targethost = o.TargetHostToLookup
-			}
-			if len(o.TargetDNSServer) == 0 {
-				targetdns = "coredns"
-			} else {
-				targetdns = o.TargetDNSServer
-			}
-			target = fmt.Sprintf("host: %s; dns: %s", targethost, targetdns)
-
 		} else {
 			for _, jPodInfo := range jPodInfos {
 				for _, ip := range jPodInfo.PodIPs {
@@ -192,7 +172,10 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 					})
 					mutex.Unlock()
 				}
-				barctl.Add(1)
+				err := barctl.Add(1)
+				if err != nil {
+					klog.Error("processs bar event add error")
+				}
 			}
 			return
 		}
@@ -203,10 +186,13 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 		mutex.Lock()
 		resultData = append(resultData, &PrintCheckData{
 			*cmdResult,
-			iPodInfo.NodeName, iPodInfo.NodeName, target,
+			iPodInfo.NodeName, iPodInfo.NodeName, cmdObj.GetCommandStr(),
 		})
 		mutex.Unlock()
-		barctl.Add(1)
+		err := barctl.Add(1)
+		if err != nil {
+			klog.Error("processs bar event add error")
+		}
 	}
 
 	var wg sync.WaitGroup
