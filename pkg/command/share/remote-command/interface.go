@@ -20,6 +20,7 @@ type Result struct {
 type Command interface {
 	GetCommandStr() string
 	ParseResult(string) *Result
+	GetTargetStr() string
 }
 
 func ParseError(err error) *Result {
