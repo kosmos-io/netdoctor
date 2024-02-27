@@ -186,7 +186,7 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 		mutex.Lock()
 		resultData = append(resultData, &PrintCheckData{
 			*cmdResult,
-			iPodInfo.NodeName, iPodInfo.NodeName, cmdObj.GetCommandStr(),
+			iPodInfo.NodeName, iPodInfo.NodeName, cmdObj.GetTargetStr(),
 		})
 		mutex.Unlock()
 		err := barctl.Add(1)
