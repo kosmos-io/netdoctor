@@ -303,7 +303,13 @@ func (f *Floater) CommandExec(fInfo *FloatInfo, cmd command.Command) *command.Re
 
 	if err != nil {
 		// klog.Infof("error: %s", err)
-		return command.ParseError(fmt.Errorf("%s, stderr: %s", err, errBuffer.String()))
+		errString := errBuffer.String()
+		if len(errString) != 0 {
+			return command.ParseError(fmt.Errorf("%s, stderr: %s", err, errString))
+		} else {
+			outString := outBuffer.String()
+			return command.ParseError(fmt.Errorf("%s, stderr: %s", err, outString))
+		}
 	}
 
 	return cmd.ParseResult(outBuffer.String())

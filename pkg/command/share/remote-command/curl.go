@@ -11,6 +11,10 @@ type Curl struct {
 	Port     string
 }
 
+func (c *Curl) GetTargetStr() string {
+	return fmt.Sprintf("%s:%s", c.TargetIP, c.Port)
+}
+
 func (c *Curl) GetCommandStr() string {
 	// execute once
 	if utils.IsIPv6(c.TargetIP) {

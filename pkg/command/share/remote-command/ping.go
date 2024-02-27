@@ -11,6 +11,10 @@ type Ping struct {
 	TargetIP string
 }
 
+func (c *Ping) GetTargetStr() string {
+	return c.TargetIP
+}
+
 func (c *Ping) GetCommandStr() string {
 	// execute once
 	return fmt.Sprintf("ping -c 1 %s", c.TargetIP)
