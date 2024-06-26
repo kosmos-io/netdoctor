@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strconv"
 
 	"sync"
 
@@ -67,6 +68,10 @@ func (o *CheckOptions) LoadConfig() {
 func (o *CheckOptions) Complete() error {
 	o.LoadConfig()
 
+	if o.DoOption == nil {
+		return fmt.Errorf("config.json load error")
+	}
+
 	srcfloater := &share.Floater{
 		Namespace:         o.DoOption.Namespace,
 		Name:              share.DefaultFloaterName,
@@ -107,6 +112,19 @@ func (o *CheckOptions) Complete() error {
 func (o *CheckOptions) Validate() error {
 	if len(o.DoOption.Namespace) == 0 {
 		return fmt.Errorf("namespace must be specified")
+	}
+	if len(o.DoOption.CustomizedTargetPortList) != 0 {
+		for _, port := range o.DoOption.CustomizedTargetPortList {
+			portInt, err := strconv.Atoi(port)
+			if err != nil {
+				return fmt.Errorf("invalid port: %s", port)
+			} else if portInt <= 0 || portInt > 65535 {
+				return fmt.Errorf("invalid port: %d", portInt)
+			}
+		}
+		if len(o.DoOption.CustomizedTargetIPList) == 0 {
+			return fmt.Errorf("if CustomizedTargetPortList is not null, CustomizedTargetIPList should be assigned")
+		}
 	}
 
 	return nil

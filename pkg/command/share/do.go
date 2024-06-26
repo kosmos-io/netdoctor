@@ -6,6 +6,8 @@ import (
 
 	command "github.com/kosmos.io/netdoctor/pkg/command/share/remote-command"
 	"github.com/kosmos.io/netdoctor/pkg/utils"
+
+	progressbar "github.com/schollz/progressbar/v3"
 	"k8s.io/klog/v2"
 )
 
@@ -13,9 +15,13 @@ type DoOptions struct {
 	Namespace string `json:"namespace,omitempty"`
 	Version   string `json:"version,omitempty"`
 
-	Protocol    string `json:"protocol,omitempty"`
-	PodWaitTime int    `json:"podWaitTime,omitempty"`
-	Port        string `json:"port,omitempty"`
+	Protocol                 string   `json:"protocol,omitempty"`
+	PodWaitTime              int      `json:"podWaitTime,omitempty"`
+	Port                     string   `json:"port,omitempty"`
+	CustomizedTargetPortList []string `json:"customizedTargetPortList,omitempty"`
+	CustomizedTargetIPList   []string `json:"customizedTargetIPList,omitempty"`
+	TargetDNSServer          string   `json:"targetDNSServer,omitempty"`
+	TargetHostToLookup       string   `json:"targetHostToLookup,omitempty"`
 
 	MaxNum     int  `json:"maxNum,omitempty"`
 	CmdTimeout int  `json:"cmdTimeout,omitempty"`
@@ -94,6 +100,20 @@ func (o *DoOptions) SaveOpts() {
 	}
 }
 
+func (o *DoOptions) SkipPod(podInfo *FloatInfo) bool {
+	// is check:  no skip
+	if len(o.ResumeRecord) == 0 {
+		return false
+	}
+	// is resume: filt
+	for _, r := range o.ResumeRecord {
+		if r.SrcNodeName == podInfo.NodeName {
+			return false
+		}
+	}
+	return true
+}
+
 func (o *DoOptions) Skip(podInfo *FloatInfo, targetIP string) bool {
 	// is check:  no skip
 	if len(o.ResumeRecord) == 0 {
@@ -112,34 +132,66 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 	var resultData []*PrintCheckData
 	mutex := sync.Mutex{}
 
-	barctl := utils.NewBar(len(jPodInfos) * len(iPodInfos))
+	var barctl *progressbar.ProgressBar
+
+	if len(o.CustomizedTargetIPList) != 0 && len(o.CustomizedTargetPortList) != 0 ||
+		o.Protocol == string(utils.DNS) {
+		barctl = utils.NewBar(len(iPodInfos))
+	} else {
+		barctl = utils.NewBar(len(jPodInfos) * len(iPodInfos))
+	}
 
 	worker := func(iPodInfo *FloatInfo) {
-		for _, jPodInfo := range jPodInfos {
-			for _, ip := range jPodInfo.PodIPs {
-				var targetIP string
-				var err error
-				var cmdResult *command.Result
-				targetIP = ip
-				if err != nil {
-					cmdResult = command.ParseError(err)
-				} else {
-					// isSkip
-					if o.Skip(iPodInfo, targetIP) {
-						continue
+		var cmdObj command.Command
+		if len(o.CustomizedTargetIPList) != 0 && len(o.CustomizedTargetPortList) != 0 {
+			cmdObj = command.NewCmd(o.Protocol, o.CustomizedTargetIPList, o.CustomizedTargetPortList)
+		} else if o.Protocol == string(utils.DNS) {
+			cmdObj = command.NewCmd(o.Protocol, o.TargetHostToLookup, o.TargetDNSServer)
+		} else {
+			for _, jPodInfo := range jPodInfos {
+				for _, ip := range jPodInfo.PodIPs {
+					var targetIP string
+					var err error
+					var cmdResult *command.Result
+					targetIP = ip
+					if err != nil {
+						cmdResult = command.ParseError(err)
+					} else {
+						// isSkip
+						if o.Skip(iPodInfo, targetIP) {
+							continue
+						}
+						// ToDo RunRange && RunNative func support multiple commands, and the code needs to be optimized
+						cmdObj := command.NewCmd(o.Protocol, targetIP, o.Port)
+						cmdResult = o.SrcFloater.CommandExec(iPodInfo, cmdObj)
 					}
-					// ToDo RunRange && RunNative func support multiple commands, and the code needs to be optimized
-					cmdObj := command.NewCmd(o.Protocol, targetIP, o.Port)
-					cmdResult = o.SrcFloater.CommandExec(iPodInfo, cmdObj)
+					mutex.Lock()
+					resultData = append(resultData, &PrintCheckData{
+						*cmdResult,
+						iPodInfo.NodeName, jPodInfo.NodeName, targetIP,
+					})
+					mutex.Unlock()
 				}
-				mutex.Lock()
-				resultData = append(resultData, &PrintCheckData{
-					*cmdResult,
-					iPodInfo.NodeName, jPodInfo.NodeName, targetIP,
-				})
-				mutex.Unlock()
+				err := barctl.Add(1)
+				if err != nil {
+					klog.Error("processs bar event add error")
+				}
 			}
-			barctl.Add(1)
+			return
+		}
+		if o.SkipPod(iPodInfo) {
+			return
+		}
+		cmdResult := o.SrcFloater.CommandExec(iPodInfo, cmdObj)
+		mutex.Lock()
+		resultData = append(resultData, &PrintCheckData{
+			*cmdResult,
+			iPodInfo.NodeName, iPodInfo.NodeName, cmdObj.GetTargetStr(),
+		})
+		mutex.Unlock()
+		err := barctl.Add(1)
+		if err != nil {
+			klog.Error("processs bar event add error")
 		}
 	}
 

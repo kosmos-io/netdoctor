@@ -47,14 +47,18 @@ func NewInitCmd() *cobra.Command {
 
 func (o *InitOptions) Run() error {
 	doOptions := share.DoOptions{
-		Namespace:   utils.DefaultNamespace,
-		Port:        "8889",
-		PodWaitTime: 30,
-		Protocol:    string(utils.TCP),
-		MaxNum:      3,
-		AutoClean:   false,
-		CmdTimeout:  10,
-		Version:     "0.2.1",
+		Namespace:                utils.DefaultNamespace,
+		Port:                     "8889",
+		CustomizedTargetPortList: []string{},
+		CustomizedTargetIPList:   []string{},
+		TargetDNSServer:          "",
+		TargetHostToLookup:       "",
+		PodWaitTime:              30,
+		Protocol:                 string(utils.TCP),
+		MaxNum:                   3,
+		AutoClean:                false,
+		CmdTimeout:               10,
+		Version:                  "0.2.1",
 		// src
 		SrcImageRepository: utils.DefaultImageRepository,
 		SrcKubeConfig:      utils.DefaultKubeConfigPath,
