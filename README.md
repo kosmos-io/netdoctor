@@ -17,7 +17,7 @@ For the above two aspects, we designed the `NetDoctor` tool to solve network pro
 ## Prerequisites
 
 * `go` version v1.15+
-* `kubenetes` version v1.16+
+* `kubernetes` version v1.16+
 
 ## Quick Start
 
