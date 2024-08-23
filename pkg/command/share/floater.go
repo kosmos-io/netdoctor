@@ -161,7 +161,21 @@ func (f *Floater) applyDaemonSet() error {
 	if err != nil {
 		return err
 	}
-	_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Create(context.Background(), clusterlinkFloaterDaemonSet, metav1.CreateOptions{})
+
+	applyFunc := func() error {
+		_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Create(context.Background(), clusterlinkFloaterDaemonSet, metav1.CreateOptions{})
+		return err
+	}
+
+	_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Get(context.Background(), f.Name, metav1.GetOptions{})
+	if err == nil {
+		applyFunc = func() error {
+			_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Update(context.Background(), clusterlinkFloaterDaemonSet, metav1.UpdateOptions{})
+			return err
+		}
+	}
+
+	err = applyFunc()
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("linkctl floater run error, daemonset options failed: %v", err)

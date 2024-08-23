@@ -51,6 +51,9 @@ func NewCleanCmd() *cobra.Command {
 func (o *CleanOptions) LoadConfig() {
 	fromConfig := &share.DoOptions{}
 	if err := utils.ReadOpt(fromConfig); err == nil {
+		if len(fromConfig.Mode) == 0 {
+			fromConfig.Mode = share.Pod
+		}
 		once.Do(func() {
 			klog.Infof("use config from file!!!!!!")
 		})
@@ -68,7 +71,7 @@ func (o *CleanOptions) Complete() error {
 		Version:           o.DoOption.Version,
 		PodWaitTime:       o.DoOption.PodWaitTime,
 		Port:              o.DoOption.Port,
-		EnableHostNetwork: false,
+		EnableHostNetwork: o.DoOption.GetEnableHostNetwork(true),
 		EnableAnalysis:    false,
 	}
 	if err := srcfloater.CompleteFromKubeConfigPath(o.DoOption.SrcKubeConfig, ""); err != nil {
@@ -86,7 +89,7 @@ func (o *CleanOptions) Complete() error {
 			Version:           o.DoOption.Version,
 			PodWaitTime:       o.DoOption.PodWaitTime,
 			Port:              o.DoOption.Port,
-			EnableHostNetwork: false,
+			EnableHostNetwork: o.DoOption.GetEnableHostNetwork(false),
 			EnableAnalysis:    false,
 		}
 		if err := dstfloater.CompleteFromKubeConfigPath(o.DoOption.DstKubeConfig, ""); err != nil {

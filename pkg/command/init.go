@@ -65,6 +65,7 @@ func (o *InitOptions) Run() error {
 		// dst
 		DstImageRepository: "",
 		DstKubeConfig:      "",
+		Mode:               share.Pod,
 	}
 
 	if err := utils.WriteOpt(doOptions); err != nil {

@@ -3,9 +3,11 @@ package command
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/kosmos.io/netdoctor/pkg/utils"
 )
 
-var pingReg, _ = regexp.Compile(`PING[\s\S]*1\spackets\stransmitted,\s1\spackets\sreceived,\s0[%]\spacket\sloss[\s\S]*$`)
+var pingReg, _ = regexp.Compile(`PING[\s\S]*\s0[%]\spacket\sloss[\s\S]*$`)
 
 type Ping struct {
 	TargetIP string
@@ -17,7 +19,11 @@ func (c *Ping) GetTargetStr() string {
 
 func (c *Ping) GetCommandStr() string {
 	// execute once
-	return fmt.Sprintf("ping -c 1 %s", c.TargetIP)
+	if utils.IsIPv6(c.TargetIP) {
+		return fmt.Sprintf("ping6 -c 1 %s", c.TargetIP)
+	} else {
+		return fmt.Sprintf("ping -c 1 %s", c.TargetIP)
+	}
 }
 
 func (c *Ping) ParseResult(result string) *Result {

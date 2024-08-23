@@ -11,9 +11,19 @@ import (
 	"k8s.io/klog/v2"
 )
 
+type ModeType string
+
+const (
+	Node      ModeType = "node"
+	Pod       ModeType = "pod"
+	NodeToPod ModeType = "node-to-pod"
+	PodToNode ModeType = "pod-to-node"
+)
+
 type DoOptions struct {
-	Namespace string `json:"namespace,omitempty"`
-	Version   string `json:"version,omitempty"`
+	Namespace string   `json:"namespace,omitempty"`
+	Version   string   `json:"version,omitempty"`
+	Mode      ModeType `json:"mode,omitempty"`
 
 	Protocol                 string   `json:"protocol,omitempty"`
 	PodWaitTime              int      `json:"podWaitTime,omitempty"`
@@ -38,13 +48,51 @@ type DoOptions struct {
 	ResumeRecord []*PrintCheckData `json:"-"`
 }
 
+func (o *DoOptions) GetEnableHostNetwork(isSrc bool) bool {
+	if isSrc {
+		switch o.Mode {
+		case Node, NodeToPod:
+			return true
+		case Pod, PodToNode:
+			return false
+		}
+	} else {
+		switch o.Mode {
+		case Node, PodToNode:
+			return true
+		case NodeToPod, Pod:
+			return false
+		}
+	}
+	return false
+}
+
+func (o *DoOptions) GetInfo(floater *Floater, isSrc bool) ([]*FloatInfo, error) {
+	if isSrc {
+		switch o.Mode {
+		case Node, NodeToPod:
+			return floater.GetNodesInfo()
+		case Pod, PodToNode:
+			return floater.GetPodInfo()
+		}
+	} else {
+		switch o.Mode {
+		case Node, PodToNode:
+			return floater.GetNodesInfo()
+		case NodeToPod, Pod:
+			return floater.GetPodInfo()
+		}
+	}
+	return floater.GetPodInfo()
+}
+
 func (o *DoOptions) Run() error {
 	if err := o.SrcFloater.CreateFloater(); err != nil {
 		return err
 	}
 
 	if o.DstKubeConfig != "" {
-		srcPodInfos, err := o.SrcFloater.GetPodInfo()
+		srcInfos, err := o.GetInfo(o.SrcFloater, true)
 		if err != nil {
 			return fmt.Errorf("get src cluster podInfos failed: %s", err)
 		}
@@ -52,19 +100,26 @@ func (o *DoOptions) Run() error {
 		if err = o.DstFloater.CreateFloater(); err != nil {
 			return err
 		}
-		var dstPodInfos []*FloatInfo
-		dstPodInfos, err = o.DstFloater.GetPodInfo()
+		var dstInfos []*FloatInfo
+		dstInfos, err = o.GetInfo(o.DstFloater, false)
 		if err != nil {
 			return fmt.Errorf("get dist cluster podInfos failed: %s", err)
 		}
 
-		PrintResult(o.RunRange(srcPodInfos, dstPodInfos))
+		PrintResult(o.RunRange(srcInfos, dstInfos))
 	} else {
-		srcPodInfos, err := o.SrcFloater.GetPodInfo()
+		srcInfos, err := o.GetInfo(o.SrcFloater, true)
 		if err != nil {
 			return fmt.Errorf("get src cluster podInfos failed: %s", err)
 		}
-		PrintResult(o.RunRange(srcPodInfos, srcPodInfos))
+
+		var dstInfos []*FloatInfo
+		dstInfos, err = o.GetInfo(o.SrcFloater, false)
+		if err != nil {
+			return fmt.Errorf("get dist cluster podInfos failed: %s", err)
+		}
+
+		PrintResult(o.RunRange(srcInfos, dstInfos))
 	}
 
 	if o.AutoClean {
@@ -149,7 +204,13 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 			cmdObj = command.NewCmd(o.Protocol, o.TargetHostToLookup, o.TargetDNSServer)
 		} else {
 			for _, jPodInfo := range jPodInfos {
-				for _, ip := range jPodInfo.PodIPs {
+				targetIPs := jPodInfo.PodIPs
+				needWrapper := false
+				if len(jPodInfo.NodeIPs) != 0 {
+					targetIPs = jPodInfo.NodeIPs
+					needWrapper = true
+				}
+				for _, ip := range targetIPs {
 					var targetIP string
 					var err error
 					var cmdResult *command.Result
@@ -163,6 +224,11 @@ func (o *DoOptions) RunRange(iPodInfos []*FloatInfo, jPodInfos []*FloatInfo) []*
 						}
 						// ToDo RunRange && RunNative func support multiple commands, and the code needs to be optimized
 						cmdObj := command.NewCmd(o.Protocol, targetIP, o.Port)
+						if needWrapper {
+							cmdObj = command.Wrapper{
+								Cmd: cmdObj,
+							}
+						}
 						cmdResult = o.SrcFloater.CommandExec(iPodInfo, cmdObj)
 					}
 					mutex.Lock()
