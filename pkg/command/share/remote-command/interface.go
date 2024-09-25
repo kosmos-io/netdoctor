@@ -35,7 +35,7 @@ func PrintStatus(status int) string {
 		return "EXCEPTION"
 	}
 	if status == CommandSuccessed {
-		return "SUCCESSED"
+		return "SUCCEEDED"
 	}
 	if status == CommandFailed {
 		return "FAILED"
