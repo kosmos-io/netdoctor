@@ -2,6 +2,7 @@ package share
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 
@@ -19,13 +20,16 @@ type PrintCheckData struct {
 }
 
 func PrintResult(resultData []*PrintCheckData) {
-	table := tablewriter.NewWriter(os.Stdout)
+	PrintResultWithWriter(resultData, os.Stdout)
+}
+func PrintResultWithWriter(resultData []*PrintCheckData, writer io.Writer) {
+	table := tablewriter.NewWriter(writer)
 	table.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGETP", "RESULT"})
 
-	tableException := tablewriter.NewWriter(os.Stdout)
+	tableException := tablewriter.NewWriter(writer)
 	tableException.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET", "RESULT", "LOG"})
 
-	tableFailed := tablewriter.NewWriter(os.Stdout)
+	tableFailed := tablewriter.NewWriter(writer)
 	tableFailed.SetHeader([]string{"S/N", "SRC_NODE_NAME", "DST_NODE_NAME", "TARGET", "RESULT", "LOG"})
 
 	resumeData := []*PrintCheckData{}
