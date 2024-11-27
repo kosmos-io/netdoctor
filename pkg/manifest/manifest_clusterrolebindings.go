@@ -1,18 +1,18 @@
 package manifest
 
 const (
-	ClusterlinkFloaterClusterRoleBinding = `
+	NetDoctorFloaterClusterRoleBinding = `
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: clusterlink-floater
+  name: netdr-floater
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: clusterlink-floater
+  name: netdr-floater
 subjects:
   - kind: ServiceAccount
-    name: clusterlink-floater
+    name: netdr-floater
     namespace: {{ .Namespace }}
 `
 )

@@ -21,15 +21,15 @@ set -o pipefail
 #   VERSION           image version
 #   DOCKER_BUILD_ARGS additional arguments to the docker build command
 # Examples:
-#   hack/docker.sh clusterlink-controllermanager
-#   BUILD_PLATFORMS=linux/amd64 hack/docker.sh clusterlink-controllermanager
-#   OUTPUT_TYPE=registry BUILD_PLATFORMS=linux/amd64,linux/arm64 hack/docker.sh clusterlink-controllermanager
-#   DOCKER_BUILD_ARGS="--build-arg https_proxy=${https_proxy}" hack/docker.sh clusterlink-controllermanager
+#   hack/docker.sh netdoctor
+#   BUILD_PLATFORMS=linux/amd64 hack/docker.sh netdoctor
+#   OUTPUT_TYPE=registry BUILD_PLATFORMS=linux/amd64,linux/arm64 hack/docker.sh netdoctor
+#   DOCKER_BUILD_ARGS="--build-arg https_proxy=${https_proxy}" hack/docker.sh netdoctor
 
 REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 source "${REPO_ROOT}/hack/util.sh"
 
-REGISTRY=${REGISTRY:-"docker.io/clusterlink"}
+REGISTRY=${REGISTRY:-"docker.io/netdoctor"}
 VERSION=${VERSION:="unknown"}
 DOCKER_BUILD_ARGS=${DOCKER_BUILD_ARGS:-}
 
@@ -38,7 +38,7 @@ function build_images() {
   local -r output_type=${OUTPUT_TYPE:-docker}
   local platforms="${BUILD_PLATFORMS:-"$(util:host_platform)"}"
   local dockerfile="Dockerfile"
-  if [[ "${target}" == "clusterlink-floater" ]]; then
+  if [[ "${target}" == "netdr-floater" ]]; then
     dockerfile="floater.Dockerfile"
   fi
 

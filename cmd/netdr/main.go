@@ -4,11 +4,11 @@ import (
 	"k8s.io/component-base/cli"
 	"k8s.io/kubectl/pkg/cmd/util"
 
-	app "github.com/kosmos.io/netdoctor/pkg"
+	"github.com/kosmos.io/netdoctor/pkg/netdr"
 )
 
 func main() {
-	cmd := app.NewNetDoctorCtlCommand()
+	cmd := netdr.NewNetDoctorCtlCommand()
 	if err := cli.RunNoErrOutput(cmd); err != nil {
 		util.CheckErr(err)
 	}

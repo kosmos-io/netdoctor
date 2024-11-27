@@ -3,16 +3,16 @@ package cmd
 import (
 	"fmt"
 	"strconv"
-
 	"sync"
 
-	"github.com/kosmos.io/netdoctor/pkg/command/share"
-	"github.com/kosmos.io/netdoctor/pkg/utils"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 	ctlutil "k8s.io/kubectl/pkg/cmd/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
+
+	"github.com/kosmos.io/netdoctor/pkg/command/share"
+	"github.com/kosmos.io/netdoctor/pkg/utils"
 )
 
 var (
@@ -21,7 +21,7 @@ var (
 
 var checkExample = templates.Examples(i18n.T(`
         # Check cluster network connectivity, e.g:
-        netdoctor check 
+        netctl check 
 `))
 
 type CheckOptions struct {
@@ -32,7 +32,7 @@ func NewCheckCmd() *cobra.Command {
 	o := &CheckOptions{}
 	cmd := &cobra.Command{
 		Use:                   "check",
-		Short:                 i18n.T("Check network connectivity"),
+		Short:                 i18n.T("Check Kubernetes Cluster Network Connectivity."),
 		Long:                  "",
 		Example:               checkExample,
 		SilenceUsage:          true,
@@ -75,7 +75,7 @@ func (o *CheckOptions) Complete() error {
 		return fmt.Errorf("config.json load error")
 	}
 
-	srcfloater := &share.Floater{
+	srcFloater := &share.Floater{
 		Namespace:         o.DoOption.Namespace,
 		Name:              share.DefaultFloaterName,
 		ImageRepository:   o.DoOption.SrcImageRepository,
@@ -85,15 +85,15 @@ func (o *CheckOptions) Complete() error {
 		EnableHostNetwork: o.DoOption.GetEnableHostNetwork(true),
 		EnableAnalysis:    false,
 	}
-	if err := srcfloater.CompleteFromKubeConfigPath(o.DoOption.SrcKubeConfig, ""); err != nil {
+	if err := srcFloater.CompleteFromKubeConfigPath(o.DoOption.SrcKubeConfig, ""); err != nil {
 		return err
 	}
-	o.DoOption.SrcFloater = srcfloater
+	o.DoOption.SrcFloater = srcFloater
 
 	if o.DoOption.DstKubeConfig == "" {
-		o.DoOption.DstFloater = srcfloater
+		o.DoOption.DstFloater = srcFloater
 	} else {
-		dstfloater := &share.Floater{
+		dstFloater := &share.Floater{
 			Namespace:         o.DoOption.Namespace,
 			Name:              share.DefaultFloaterName,
 			ImageRepository:   o.DoOption.DstImageRepository,
@@ -103,10 +103,10 @@ func (o *CheckOptions) Complete() error {
 			EnableHostNetwork: o.DoOption.GetEnableHostNetwork(false),
 			EnableAnalysis:    false,
 		}
-		if err := dstfloater.CompleteFromKubeConfigPath(o.DoOption.DstKubeConfig, ""); err != nil {
+		if err := dstFloater.CompleteFromKubeConfigPath(o.DoOption.DstKubeConfig, ""); err != nil {
 			return err
 		}
-		o.DoOption.DstFloater = dstfloater
+		o.DoOption.DstFloater = dstFloater
 	}
 
 	return nil

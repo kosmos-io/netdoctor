@@ -16,7 +16,7 @@ func NewFloaterCommand(ctx context.Context) *cobra.Command {
 	opts := options.NewOptions()
 
 	cmd := &cobra.Command{
-		Use:  "clusterlink-floater",
+		Use:  "netdr-floater",
 		Long: `Environment for executing commands`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := Run(ctx, opts); err != nil {

@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/schollz/progressbar/v3"
+	"k8s.io/klog/v2"
+
 	command "github.com/kosmos.io/netdoctor/pkg/command/share/remote-command"
 	"github.com/kosmos.io/netdoctor/pkg/utils"
-
-	progressbar "github.com/schollz/progressbar/v3"
-	"k8s.io/klog/v2"
 )
 
 type ModeType string

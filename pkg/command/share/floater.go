@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	DefaultFloaterName = "clusterlink-floater"
+	DefaultFloaterName = "netdr-floater"
 )
 
 type FloatInfo struct {
@@ -57,30 +57,30 @@ type Floater struct {
 func (f *Floater) CompleteFromKubeConfigPath(kubeConfigPath, context string) error {
 	config, err := utils.RestConfig(kubeConfigPath, context)
 	if err != nil {
-		return fmt.Errorf("kosmosctl docter complete error, generate floater config failed: %v", err)
+		return fmt.Errorf("netdoctor complete error, generate floater config failed: %v", err)
 	}
 
 	f.Config = config
 	f.Client, err = kubernetes.NewForConfig(f.Config)
 	if err != nil {
-		return fmt.Errorf("kosmosctl docter complete error, generate floater client failed: %v", err)
+		return fmt.Errorf("netdoctor complete error, generate floater client failed: %v", err)
 	}
 
 	return nil
 }
 
 func (f *Floater) CreateFloater() error {
-	klog.Infof("create Clusterlink floater, namespace: %s", f.Namespace)
+	klog.Infof("create NetDoctor floater, namespace: %s", f.Namespace)
 	namespace := &corev1.Namespace{}
 	namespace.Name = f.Namespace
 	_, err := f.Client.CoreV1().Namespaces().Create(context.TODO(), namespace, metav1.CreateOptions{})
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
-			return fmt.Errorf("linkctl floater run error, namespace options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, namespace options failed: %v", err)
 		}
 	}
 
-	klog.Info("create Clusterlink floater, apply RBAC")
+	klog.Info("create NetDoctor floater, apply RBAC resources.")
 	if err = f.applyServiceAccount(); err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func (f *Floater) CreateFloater() error {
 		return err
 	}
 
-	klog.Infof("create Clusterlink floater, version: %s", f.Version)
+	klog.Infof("create NetDoctor floater, version: %s", f.Version)
 	if err = f.applyDaemonSet(); err != nil {
 		return err
 	}
@@ -100,16 +100,16 @@ func (f *Floater) CreateFloater() error {
 }
 
 func (f *Floater) applyServiceAccount() error {
-	clusterlinkFloaterServiceAccount, err := utils.GenerateServiceAccount(manifest.ClusterlinkFloaterServiceAccount, manifest.ServiceAccountReplace{
+	netdrFloaterServiceAccount, err := utils.GenerateServiceAccount(manifest.NetDoctorFloaterServiceAccount, manifest.ServiceAccountReplace{
 		Namespace: f.Namespace,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = f.Client.CoreV1().ServiceAccounts(f.Namespace).Create(context.TODO(), clusterlinkFloaterServiceAccount, metav1.CreateOptions{})
+	_, err = f.Client.CoreV1().ServiceAccounts(f.Namespace).Create(context.TODO(), netdrFloaterServiceAccount, metav1.CreateOptions{})
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
-			return fmt.Errorf("linkctl floater run error, serviceaccount options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, serviceaccount options failed: %v", err)
 		}
 	}
 
@@ -117,14 +117,14 @@ func (f *Floater) applyServiceAccount() error {
 }
 
 func (f *Floater) applyClusterRole() error {
-	clusterlinkFloaterClusterRole, err := utils.GenerateClusterRole(manifest.ClusterlinkFloaterClusterRole, nil)
+	netdrFloaterClusterRole, err := utils.GenerateClusterRole(manifest.NetDoctorFloaterClusterRole, nil)
 	if err != nil {
 		return err
 	}
-	_, err = f.Client.RbacV1().ClusterRoles().Create(context.TODO(), clusterlinkFloaterClusterRole, metav1.CreateOptions{})
+	_, err = f.Client.RbacV1().ClusterRoles().Create(context.TODO(), netdrFloaterClusterRole, metav1.CreateOptions{})
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
-			return fmt.Errorf("linkctl floater run error, clusterrole options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, clusterrole options failed: %v", err)
 		}
 	}
 
@@ -132,16 +132,16 @@ func (f *Floater) applyClusterRole() error {
 }
 
 func (f *Floater) applyClusterRoleBinding() error {
-	clusterlinkFloaterClusterRoleBinding, err := utils.GenerateClusterRoleBinding(manifest.ClusterlinkFloaterClusterRoleBinding, manifest.ClusterRoleBindingReplace{
+	netdrFloaterClusterRoleBinding, err := utils.GenerateClusterRoleBinding(manifest.NetDoctorFloaterClusterRoleBinding, manifest.ClusterRoleBindingReplace{
 		Namespace: f.Namespace,
 	})
 	if err != nil {
 		return err
 	}
-	_, err = f.Client.RbacV1().ClusterRoleBindings().Create(context.TODO(), clusterlinkFloaterClusterRoleBinding, metav1.CreateOptions{})
+	_, err = f.Client.RbacV1().ClusterRoleBindings().Create(context.TODO(), netdrFloaterClusterRoleBinding, metav1.CreateOptions{})
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
-			return fmt.Errorf("linkctl floater run error, clusterrolebinding options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, clusterrolebinding options failed: %v", err)
 		}
 	}
 
@@ -149,7 +149,7 @@ func (f *Floater) applyClusterRoleBinding() error {
 }
 
 func (f *Floater) applyDaemonSet() error {
-	clusterlinkFloaterDaemonSet, err := utils.GenerateDaemonSet(manifest.ClusterlinkFloaterDaemonSet, manifest.DaemonSetReplace{
+	netdrFloaterDaemonSet, err := utils.GenerateDaemonSet(manifest.NetDoctorFloaterDaemonSet, manifest.DaemonSetReplace{
 		Namespace:         f.Namespace,
 		Name:              f.Name,
 		Version:           f.Version,
@@ -163,14 +163,14 @@ func (f *Floater) applyDaemonSet() error {
 	}
 
 	applyFunc := func() error {
-		_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Create(context.Background(), clusterlinkFloaterDaemonSet, metav1.CreateOptions{})
+		_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Create(context.Background(), netdrFloaterDaemonSet, metav1.CreateOptions{})
 		return err
 	}
 
 	_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Get(context.Background(), f.Name, metav1.GetOptions{})
 	if err == nil {
 		applyFunc = func() error {
-			_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Update(context.Background(), clusterlinkFloaterDaemonSet, metav1.UpdateOptions{})
+			_, err = f.Client.AppsV1().DaemonSets(f.Namespace).Update(context.Background(), netdrFloaterDaemonSet, metav1.UpdateOptions{})
 			return err
 		}
 	}
@@ -178,7 +178,7 @@ func (f *Floater) applyDaemonSet() error {
 	err = applyFunc()
 	if err != nil {
 		if !apierrors.IsAlreadyExists(err) {
-			return fmt.Errorf("linkctl floater run error, daemonset options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, daemonset options failed: %v", err)
 		}
 	}
 
@@ -330,12 +330,12 @@ func (f *Floater) CommandExec(fInfo *FloatInfo, cmd command.Command) *command.Re
 }
 
 func (f *Floater) RemoveFloater() error {
-	klog.Infof("remove Clusterlink floater, version: %s", f.Version)
+	klog.Infof("remove NetDoctor floater, version: %s", f.Version)
 	if err := f.removeDaemonSet(); err != nil {
 		return err
 	}
 
-	klog.Info("remove Clusterlink floater, apply RBAC")
+	klog.Info("remove NetDoctor floater, delete RBAC resources.")
 	if err := f.removeClusterRoleBinding(); err != nil {
 		return err
 	}
@@ -347,11 +347,11 @@ func (f *Floater) RemoveFloater() error {
 	}
 
 	if f.Namespace != utils.DefaultNamespace {
-		klog.Infof("remove namespace specified when creating Clusterlink floater, namespace: %s", f.Namespace)
+		klog.Infof("remove namespace specified when creating netdoctor floater, namespace: %s", f.Namespace)
 		err := f.Client.CoreV1().Namespaces().Delete(context.TODO(), f.Namespace, metav1.DeleteOptions{})
 		if err != nil {
 			if !apierrors.IsNotFound(err) {
-				return fmt.Errorf("linkctl floater run error, namespace options failed: %v", err)
+				return fmt.Errorf("netdoctor floater run error, namespace options failed: %v", err)
 			}
 		}
 	}
@@ -363,7 +363,7 @@ func (f *Floater) removeDaemonSet() error {
 	err := f.Client.AppsV1().DaemonSets(f.Namespace).Delete(context.Background(), f.Name, metav1.DeleteOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("linkctl floater run error, daemonset options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, daemonset options failed: %v", err)
 		}
 	}
 
@@ -374,7 +374,7 @@ func (f *Floater) removeClusterRoleBinding() error {
 	err := f.Client.RbacV1().ClusterRoleBindings().Delete(context.Background(), f.Name, metav1.DeleteOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("linkctl floater run error, clusterrolebinding options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, clusterrolebinding options failed: %v", err)
 		}
 	}
 
@@ -385,7 +385,7 @@ func (f *Floater) removeClusterRole() error {
 	err := f.Client.RbacV1().ClusterRoles().Delete(context.Background(), f.Name, metav1.DeleteOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("linkctl floater run error, clusterrole options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, clusterrole options failed: %v", err)
 		}
 	}
 
@@ -396,7 +396,7 @@ func (f *Floater) removeServiceAccount() error {
 	err := f.Client.CoreV1().ServiceAccounts(f.Namespace).Delete(context.Background(), f.Name, metav1.DeleteOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("linkctl floater run error, serviceaccount options failed: %v", err)
+			return fmt.Errorf("netdoctor floater run error, serviceaccount options failed: %v", err)
 		}
 	}
 
