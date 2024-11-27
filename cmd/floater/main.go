@@ -1,17 +1,17 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"os"
+
+	apiserver "k8s.io/apiserver/pkg/server"
+	"k8s.io/component-base/cli"
 
 	"github.com/kosmos.io/netdoctor/cmd/floater/app"
 )
 
 func main() {
-	ctx := context.TODO()
+	ctx := apiserver.SetupSignalContext()
 	cmd := app.NewFloaterCommand(ctx)
-	err := cmd.Execute()
-	if err != nil {
-		fmt.Print(err)
-	}
+	code := cli.Run(cmd)
+	os.Exit(code)
 }

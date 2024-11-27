@@ -1,11 +1,11 @@
 package manifest
 
 const (
-	ClusterlinkFloaterClusterRole = `
+	NetDoctorFloaterClusterRole = `
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: clusterlink-floater
+  name: netdr-floater
 rules:
   - apiGroups: ['*']
     resources: ['*']

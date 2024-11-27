@@ -9,7 +9,7 @@ REGISTRY_PASSWORD?=""
 REGISTRY_SERVER_ADDRESS?=""
 KIND_IMAGE_TAG?="v1.25.3"
 
-TARGETS :=  clusterlink-floater \
+TARGETS := netdr-floater \
 
 CTL_TARGETS := netctl
 
@@ -22,8 +22,8 @@ CTL_TARGETS := netctl
 # Example:
 #   make
 #   make all
-#   make clusterlink-controller-manager
-#   make clusterlink-controller-manager GOOS=linux
+#   make netdr-floater
+#   make netdr-floater GOOS=linux
 CMD_TARGET=$(TARGETS) $(CTL_TARGETS)
 
 .PHONY: all
@@ -41,8 +41,8 @@ $(CMD_TARGET):
 #
 # Example:
 #   make images
-#   make image-clusterlink-controller-manager
-#   make image-clusterlink-controller-manager GOARCH=arm64
+#   make image-netdr-floater
+#   make image-netdr-floater GOARCH=arm64
 IMAGE_TARGET=$(addprefix image-, $(TARGETS))
 .PHONY: $(IMAGE_TARGET)
 $(IMAGE_TARGET):
@@ -57,7 +57,7 @@ images: $(IMAGE_TARGET)
 #
 # Example
 #   make multi-platform-images
-#   make mp-image-clusterlink-controller-manager
+#   make mp-image-netdr
 MP_TARGET=$(addprefix mp-image-, $(TARGETS))
 .PHONY: $(MP_TARGET)
 $(MP_TARGET):
@@ -92,15 +92,7 @@ test:
 
 upload-images: images
 	@echo "push images to $(REGISTRY)"
-	docker push ${REGISTRY}/clusterlink-controller-manager:${VERSION}
-	docker push ${REGISTRY}/kosmos-operator:${VERSION}
-	docker push ${REGISTRY}/clusterlink-agent:${VERSION}
-	docker push ${REGISTRY}/clusterlink-proxy:${VERSION}
-	docker push ${REGISTRY}/clusterlink-network-manager:${VERSION}
-	docker push ${REGISTRY}/clusterlink-floater:${VERSION}
-	docker push ${REGISTRY}/clusterlink-elector:${VERSION}
-	docker push ${REGISTRY}/clustertree-cluster-manager:${VERSION}
-    docker push ${REGISTRY}/scheduler:${VERSION}
+	docker push ${REGISTRY}/netdr-floater:${VERSION}
 
 .PHONY: release
 release:

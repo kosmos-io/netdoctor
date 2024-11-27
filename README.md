@@ -44,7 +44,7 @@ I0205 16:27:26.258964 2765415 init.go:69] write opts success
 $ cat config.json
 {
  "namespace": "kosmos-system",
- "version": "v0.2.0",
+ "version": "v0.0.2",
  "protocol": "tcp",
  "podWaitTime": 30,
  "port": "8889",
@@ -58,12 +58,12 @@ $ cat config.json
 * `netctl check` command will read `config.json`, then create a `DaemonSet` named `Floater` and some related resources, and then obtain all the `IP` information of `Floater`, and then enter in sequence Go to `Pod` and execute the `Ping` or `Curl` command. It should be noted that this operation is executed concurrently, and the degree of concurrency changes dynamically according to the `maxNum` parameter in `config.json`.
 ````bash
 $ netctl check
-I0205 16:34:06.147671 2769373 check.go:61] use config from file!!!!!!
-I0205 16:34:06.148619 2769373 floater.go:73] create Clusterlink floater, namespace: kosmos-system
-I0205 16:34:06.157582 2769373 floater.go:83] create Clusterlink floater, apply RBAC
-I0205 16:34:06.167799 2769373 floater.go:94] create Clusterlink floater, version: v0.2.0
-I0205 16:34:09.178566 2769373 verify.go:79] pod: clusterlink-floater-9dzsg is ready. status: Running
-I0205 16:34:09.179593 2769373 verify.go:79] pod: clusterlink-floater-cscdh is ready. status: Running
+I1127 11:18:16.689718 1257705 check.go:65] use config from file!!!!!!
+I1127 11:18:16.690956 1257705 floater.go:73] create NetDoctor floater, namespace: kosmos-system
+I1127 11:18:16.704187 1257705 floater.go:83] create NetDoctor floater, apply RBAC resources.
+I1127 11:18:16.721158 1257705 floater.go:94] create NetDoctor floater, version: v0.0.2
+I1127 11:18:19.751548 1257705 verify.go:79] pod: netdr-floater-9fzhs is ready. status: Running
+I1127 11:18:19.754697 1257705 verify.go:79] pod: netdr-floater-t6b7z is ready. status: Running
 Do check... 100% [================================================================================]  [0s]
 +-----+----------------+----------------+-----------+-----------+
 | S/N | SRC NODE NAME  | DST NODE NAME  | TARGET IP |  RESULT   |
@@ -78,7 +78,7 @@ Do check... 100% [==============================================================
 |   1 | ecs-net-dr-002 | ecs-net-dr-001 | 10.0.1.86 | EXCEPTION |exec error: unable to upgrade  |
 |   2 | ecs-net-dr-001 | ecs-net-dr-002 | 10.0.2.29 | EXCEPTION |connection: container not......|
 +-----+----------------+----------------+-----------+-----------+-------------------------------+
-I0205 16:34:09.280220 2769373 do.go:93] write opts success
+I1127 11:18:19.995105 1257705 do.go:154] write opts success
 ````
 
 * During the execution of the `check` command, a progress bar will display the verification progress. After the command is executed, the check results will be printed and saved in the file `resume.json`.
@@ -106,7 +106,7 @@ I0205 16:34:09.280220 2769373 do.go:93] write opts success
 $ vim config.json
 {
  "namespace": "kosmos-system",
- "version": "v0.2.0",
+ "version": "v0.0.2",
  "protocol": "tcp",
  "podWaitTime": 30,
  "port": "8889",
@@ -122,12 +122,12 @@ $ vim config.json
 * `netctl resume` command is used to check only the cluster nodes with problems during the first inspection during retesting. Because there are a large number of nodes in the online environment, a single inspection may take a long time to generate results, so we hope to retest only the nodes that were abnormal in the previous inspection. The `resume` command was developed for this reason. This command will read the `resume.json` file and recheck the previous abnormal node. We can repeatedly execute this command until there are no abnormal results and then perform a full check.
 ````bash
 $ netctl resume
-I0205 16:34:06.147671 2769373 check.go:61] use config from file!!!!!!
-I0205 16:34:06.148619 2769373 floater.go:73] create Clusterlink floater, namespace: kosmos-system
-I0205 16:34:06.157582 2769373 floater.go:83] create Clusterlink floater, apply RBAC
-I0205 16:34:06.167799 2769373 floater.go:94] create Clusterlink floater, version: v0.2.0
-I0205 16:34:09.178566 2769373 verify.go:79] pod: clusterlink-floater-9dzsg is ready. status: Running
-I0205 16:34:09.179593 2769373 verify.go:79] pod: clusterlink-floater-cscdh is ready. status: Running
+I1127 11:18:16.689718 1257705 check.go:65] use config from file!!!!!!
+I1127 11:18:16.690956 1257705 floater.go:73] create NetDoctor floater, namespace: kosmos-system
+I1127 11:18:16.704187 1257705 floater.go:83] create NetDoctor floater, apply RBAC resources.
+I1127 11:18:16.721158 1257705 floater.go:94] create NetDoctor floater, version: v0.0.2
+I1127 11:18:19.751548 1257705 verify.go:79] pod: netdr-floater-9fzhs is ready. status: Running
+I1127 11:18:19.754697 1257705 verify.go:79] pod: netdr-floater-t6b7z is ready. status: Running
 Do check... 100% [================================================================================]  [0s]
 +-----+----------------+----------------+-----------+-----------+
 | S/N | SRC NODE NAME  | DST NODE NAME  | TARGET IP |  RESULT   |
@@ -138,6 +138,14 @@ Do check... 100% [==============================================================
 ````
 
 * `netctl clean` command is used to clean up all resources created by `NetDoctor`.
+
+### netdr-floater Image
+
+#### Building from source
+# Clone the project source code
+$ git clone https://github.com/kosmos-io/netdoctor.git
+# Run the make command to build the image ghcr.io/kosmos-io/netdr-floater:latest
+$ make image-netdr-floater
 
 ## Contribute Code
 

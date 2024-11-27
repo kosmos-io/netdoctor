@@ -17,8 +17,8 @@ set -o pipefail
 #                    e.g.: linux/amd64,linux/arm64
 #   LDFLAGS          pass to the `-ldflags` parameter of go build
 # Examples:
-#   hack/build.sh clusterlink-controllermanager
-#   BUILD_PLATFORMS=linux/amd64,linux/arm64 hack/build.sh clusterlink-controllermanager
+#   hack/build.sh netdoctor
+#   BUILD_PLATFORMS=linux/amd64,linux/arm64 hack/build.sh netdoctor
 
 REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 source "${REPO_ROOT}/hack/util.sh"
@@ -45,7 +45,7 @@ function build_binary_for_platform() {
   local -r os=${platform%/*}
   local -r arch=${platform##*/}
 
-  local target_pkg="${KOSMOS_GO_PACKAGE}/$(util::get_target_source "$target")"
+  local target_pkg="${NETDOCTOR_GO_TARGET}/$(util::get_target_source "$target")"
   set -x
   CGO_ENABLED=0 GOOS=${os} GOARCH=${arch} go build \
       -ldflags "${LDFLAGS:-} -s -w" \

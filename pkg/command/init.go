@@ -3,13 +3,14 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/kosmos.io/netdoctor/pkg/command/share"
-	"github.com/kosmos.io/netdoctor/pkg/utils"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 	ctlutil "k8s.io/kubectl/pkg/cmd/util"
 	"k8s.io/kubectl/pkg/util/i18n"
 	"k8s.io/kubectl/pkg/util/templates"
+
+	"github.com/kosmos.io/netdoctor/pkg/command/share"
+	"github.com/kosmos.io/netdoctor/pkg/utils"
 )
 
 var initExample = templates.Examples(i18n.T(`
@@ -58,7 +59,7 @@ func (o *InitOptions) Run() error {
 		MaxNum:                   3,
 		AutoClean:                false,
 		CmdTimeout:               10,
-		Version:                  "0.2.1",
+		Version:                  "v0.0.2",
 		// src
 		SrcImageRepository: utils.DefaultImageRepository,
 		SrcKubeConfig:      utils.DefaultKubeConfigPath,

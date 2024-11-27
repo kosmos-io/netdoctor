@@ -1,11 +1,11 @@
 package manifest
 
 const (
-	ClusterlinkFloaterServiceAccount = `
+	NetDoctorFloaterServiceAccount = `
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name:  clusterlink-floater
+  name:  netdr-floater
   namespace: {{ .Namespace }}
 `
 )
