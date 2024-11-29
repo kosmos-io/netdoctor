@@ -1,6 +1,8 @@
 module github.com/kosmos.io/netdoctor
 
-go 1.22.9
+go 1.22.0
+
+toolchain go1.22.9
 
 require (
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213
