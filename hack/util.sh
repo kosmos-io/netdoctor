@@ -6,12 +6,12 @@ set -o pipefail
 
 # This script holds common bash variables and utility functions.
 
-KOSMOS_GO_PACKAGE="github.com/kosmos.io/netdoctor"
+NETDOCTOR_GO_TARGET="github.com/kosmos.io/netdoctor"
 
 MIN_Go_VERSION=go1.19.0
 
-CLUSTERLINK_TARGET_SOURCE=(
-  clusterlink-floater=cmd/floater
+NETDOCTOR_TARGET_SOURCE=(
+  netdr-floater=cmd/floater
   netctl=cmd/netdr
 )
 
@@ -33,7 +33,7 @@ NetDoctor_GREETING='
 
 function util::get_target_source() {
   local target=$1
-  for s in "${CLUSTERLINK_TARGET_SOURCE[@]}"; do
+  for s in "${NETDOCTOR_TARGET_SOURCE[@]}"; do
     if [[ "$s" == ${target}=* ]]; then
       echo "${s##${target}=}"
       return
@@ -458,7 +458,7 @@ function util:create_gopath_tree() {
   local repo_root=$1
   local go_path=$2
 
-  local go_pkg_dir="${go_path}/src/${KOSMOS_GO_PACKAGE}"
+  local go_pkg_dir="${go_path}/src/${NETDOCTOR_GO_TARGE}"
   go_pkg_dir=$(dirname "${go_pkg_dir}")
 
   mkdir -p "${go_pkg_dir}"

@@ -1,14 +1,14 @@
 package manifest
 
 const (
-	ClusterlinkFloaterDaemonSet = `
+	NetDoctorFloaterDaemonSet = `
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: clusterlink-floater
+  name: netdr-floater
   namespace: {{ .Namespace }}
   labels:
-    app: clusterlink-floater
+    app: netdr-floater
 spec:
   replicas: 1
   selector:
@@ -20,7 +20,7 @@ spec:
         app: {{ .Name }}
     spec:
       hostNetwork: {{ .EnableHostNetwork }}
-      serviceAccountName: clusterlink-floater
+      serviceAccountName: netdr-floater
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
@@ -30,10 +30,10 @@ spec:
                 operator: DoesNotExist
       containers:
       - name: floater
-        image: {{ .ImageRepository }}/clusterlink-floater:{{ .Version }}
-        imagePullPolicy: Always
+        image: {{ .ImageRepository }}/netdr-floater:{{ .Version }}
+        imagePullPolicy: IfNotPresent
         command:
-          - clusterlink-floater
+          - netdr-floater
         securityContext:
           privileged: true
         env: 

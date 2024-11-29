@@ -43,7 +43,7 @@ I0205 16:27:26.258964 2765415 init.go:69] write opts success
 $ cat config.json
 {
  "namespace": "kosmos-system",
- "version": "v0.2.0",
+ "version": "v0.0.2",
  "protocol": "tcp",
  "podWaitTime": 30,
  "port": "8889",
@@ -57,12 +57,12 @@ $ cat config.json
 * `netctl check`命令会读取`config.json`，然后创建一个名为`Floater`的`DaemonSet`以及相关联的一些资源，之后会获取所有的`Floater`的`IP`信息，然后依次进入到`Pod`中执行`Ping`或者`Curl`命令。需要注意的是，这个操作是并发执行的，并发度根据`config.json`中的`maxNum`参数动态变化。
 ````bash
 $ netctl check
-I0205 16:34:06.147671 2769373 check.go:61] use config from file!!!!!!
-I0205 16:34:06.148619 2769373 floater.go:73] create Clusterlink floater, namespace: kosmos-system
-I0205 16:34:06.157582 2769373 floater.go:83] create Clusterlink floater, apply RBAC
-I0205 16:34:06.167799 2769373 floater.go:94] create Clusterlink floater, version: v0.2.0
-I0205 16:34:09.178566 2769373 verify.go:79] pod: clusterlink-floater-9dzsg is ready. status: Running
-I0205 16:34:09.179593 2769373 verify.go:79] pod: clusterlink-floater-cscdh is ready. status: Running
+I1127 11:18:16.689718 1257705 check.go:65] use config from file!!!!!!
+I1127 11:18:16.690956 1257705 floater.go:73] create NetDoctor floater, namespace: kosmos-system
+I1127 11:18:16.704187 1257705 floater.go:83] create NetDoctor floater, apply RBAC resources.
+I1127 11:18:16.721158 1257705 floater.go:94] create NetDoctor floater, version: v0.0.2
+I1127 11:18:19.751548 1257705 verify.go:79] pod: netdr-floater-9fzhs is ready. status: Running
+I1127 11:18:19.754697 1257705 verify.go:79] pod: netdr-floater-t6b7z is ready. status: Running
 Do check... 100% [================================================================================]  [0s]
 +-----+----------------+----------------+-----------+-----------+
 | S/N | SRC NODE NAME  | DST NODE NAME  | TARGET IP |  RESULT   |
@@ -77,7 +77,7 @@ Do check... 100% [==============================================================
 |   1 | ecs-net-dr-002 | ecs-net-dr-001 | 10.0.1.86 | EXCEPTION |exec error: unable to upgrade  |
 |   2 | ecs-net-dr-001 | ecs-net-dr-002 | 10.0.2.29 | EXCEPTION |connection: container not......|
 +-----+----------------+----------------+-----------+-----------+-------------------------------+
-I0205 16:34:09.280220 2769373 do.go:93] write opts success
+I1127 11:18:19.995105 1257705 do.go:154] write opts success
 ````
 * 在`check`命令执行的过程中，会有进度条显示校验进度。命令执行完成后，会打印检查结果，并将结果保存在文件`resume.json`中。
 ````bash
@@ -104,7 +104,7 @@ I0205 16:34:09.280220 2769373 do.go:93] write opts success
 $ vim config.json
 {
  "namespace": "kosmos-system",
- "version": "v0.2.0",
+ "version": "v0.0.2",
  "protocol": "tcp",
  "podWaitTime": 30,
  "port": "8889",
@@ -120,12 +120,12 @@ $ vim config.json
 * `netctl resume`命令用于复测时只检验第一次检查时有问题的集群节点。因为线上环境节点数量很多，单次检查可能会需要比较长的时间才能生成结果，所以我们希望仅对前一次检查异常的节点进行复测。`resume`命令因此被开发，该命令会读取`resume.json`文件，并对前一次异常的节点进行再次检查，我们可以重复执行此命令至没有异常的结果后再执行全量检查。
 ````bash
 $ netctl resume
-I0205 16:34:06.147671 2769373 check.go:61] use config from file!!!!!!
-I0205 16:34:06.148619 2769373 floater.go:73] create Clusterlink floater, namespace: kosmos-system
-I0205 16:34:06.157582 2769373 floater.go:83] create Clusterlink floater, apply RBAC
-I0205 16:34:06.167799 2769373 floater.go:94] create Clusterlink floater, version: v0.2.0
-I0205 16:34:09.178566 2769373 verify.go:79] pod: clusterlink-floater-9dzsg is ready. status: Running
-I0205 16:34:09.179593 2769373 verify.go:79] pod: clusterlink-floater-cscdh is ready. status: Running
+I1127 11:18:16.689718 1257705 check.go:65] use config from file!!!!!!
+I1127 11:18:16.690956 1257705 floater.go:73] create NetDoctor floater, namespace: kosmos-system
+I1127 11:18:16.704187 1257705 floater.go:83] create NetDoctor floater, apply RBAC resources.
+I1127 11:18:16.721158 1257705 floater.go:94] create NetDoctor floater, version: v0.0.2
+I1127 11:18:19.751548 1257705 verify.go:79] pod: netdr-floater-9fzhs is ready. status: Running
+I1127 11:18:19.754697 1257705 verify.go:79] pod: netdr-floater-t6b7z is ready. status: Running
 Do check... 100% [================================================================================]  [0s]
 +-----+----------------+----------------+-----------+-----------+
 | S/N | SRC NODE NAME  | DST NODE NAME  | TARGET IP |  RESULT   |
@@ -136,6 +136,16 @@ Do check... 100% [==============================================================
 ````
 
 * `netctl clean`命令用于清理`NetDoctor`创建的所有资源。
+
+### netdr-floater镜像
+
+#### 从源码构建
+````bash
+# 下载项目源码
+$ git clone https://github.com/kosmos-io/netdoctor.git
+# 执行后make后会构建出ghcr.io/kosmos-io/netdr-floater:latest
+$ make image-netdr-floater
+````
 
 ## 贡献代码
 
